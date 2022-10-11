@@ -290,7 +290,11 @@ namespace KomeTube.ViewModel
                             AuthorBadges = vm.AuthorBadges,
                             Message = vm.Message,
                             PaidMsg = vm.PaidMessage,
-                            AuthorID = vm.AuthorID
+                            AuthorID = vm.AuthorID,
+                            Membership = vm.Membership,
+                            GiftRedemption = vm.GiftRedemption,
+                            GiftPurchase = vm.GiftPurchase,
+                            PaidStk = vm.PaidSticker
                         };
                         cw.WriteRecord<CommentExportData>(data);
                         cw.NextRecord();
