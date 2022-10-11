@@ -477,21 +477,72 @@ namespace KomeTube.Kernel
             for (int i = 0; i < commentActions.Count; i++)
             {
                 CommentData cmt = new CommentData();
-                cmt.addChatItemAction.clientId = Convert.ToString(JsonHelper.TryGetValueByXPath(commentActions[i], "addChatItemAction.clientId", ""));
+                cmt.addChatItemAction.clientId = Convert.ToString(JsonHelper.TryGetValueByXPath(commentActions[i],
+                    "addChatItemAction.clientId", ""));
+                cmt.replaceChatItemAction.targetItemId = Convert.ToString(JsonHelper.TryGetValueByXPath(commentActions[i],
+                    "replaceChatItemAction.targetItemId", ""));
 
-                var txtMsgRd = JsonHelper.TryGetValueByXPath(commentActions[i], "addChatItemAction.item.liveChatTextMessageRenderer", null);
+                var txtMsgRd = JsonHelper.TryGetValueByXPath(commentActions[i],
+                    "addChatItemAction.item.liveChatTextMessageRenderer", null);
                 if (txtMsgRd != null)
                 {
                     ParseTextMessage(cmt.addChatItemAction.item.liveChatTextMessageRenderer, txtMsgRd);
                 }
                 else
                 {
-                    dynamic paidMsgRd = JsonHelper.TryGetValueByXPath(commentActions[i], "addChatItemAction.item.liveChatPaidMessageRenderer", null);
-                    if (paidMsgRd == null)
+                    dynamic paidMsgRd = JsonHelper.TryGetValueByXPath(commentActions[i],
+                        "addChatItemAction.item.liveChatPaidMessageRenderer", null);
+                    if (paidMsgRd != null)
                     {
-                        continue;
+                        ParsePaidMessage(cmt.addChatItemAction.item.liveChatPaidMessageRenderer, paidMsgRd);
                     }
-                    ParsePaidMessage(cmt.addChatItemAction.item.liveChatPaidMessageRenderer, paidMsgRd);
+                    else
+                    {
+                        dynamic membershipItmRd = JsonHelper.TryGetValueByXPath(commentActions[i],
+                            "addChatItemAction.item.liveChatMembershipItemRenderer", null);
+                        if (membershipItmRd != null)
+                        {
+                            ParseMembershipItem(cmt.addChatItemAction.item.liveChatMembershipItemRenderer, membershipItmRd);
+                        }
+                        else
+                        {
+                            dynamic giftRedemptionAcmRd = JsonHelper.TryGetValueByXPath(commentActions[i],
+                                "addChatItemAction.item.liveChatSponsorshipsGiftRedemptionAnnouncementRenderer", null);
+                            if (giftRedemptionAcmRd != null)
+                            {
+                                ParseGiftRedemptionAnnouncement(cmt.addChatItemAction.item.liveChatSponsorshipsGiftRedemptionAnnouncementRenderer, giftRedemptionAcmRd);
+                            }
+                            else
+                            {
+                                ///continue;
+                                dynamic giftPurchaseAcmRd = JsonHelper.TryGetValueByXPath(commentActions[i],
+                                    "addChatItemAction.item.liveChatSponsorshipsGiftPurchaseAnnouncementRenderer", null);
+                                if (giftPurchaseAcmRd != null)
+                                {
+                                    ParseGiftPurchaseAnnouncement(cmt.addChatItemAction.item.liveChatSponsorshipsGiftPurchaseAnnouncementRenderer, giftPurchaseAcmRd);
+                                }
+                                else
+                                {
+                                    dynamic paidStkRd = JsonHelper.TryGetValueByXPath(commentActions[i],
+                                        "addChatItemAction.item.liveChatPaidStickerRenderer", null);
+                                    if (paidStkRd != null)
+                                    {
+                                        ParsePaidSticker(cmt.addChatItemAction.item.liveChatPaidStickerRenderer, paidStkRd);
+                                    }
+                                    else
+                                    {
+                                        dynamic replacetxtMsgRd = JsonHelper.TryGetValueByXPath(commentActions[i],
+                                            "replaceChatItemAction.replacementItem.liveChatTextMessageRenderer", null);
+                                        if (replacetxtMsgRd != null)
+                                        {
+                                            ParseTextMessage(cmt.replaceChatItemAction.replacementItem.liveChatTextMessageRenderer, replacetxtMsgRd);
+                                        }
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 ret.Add(cmt);
@@ -517,6 +568,215 @@ namespace KomeTube.Kernel
             liveChatPaidMessageRenderer.bodyTextColor = Convert.ToInt64(JsonHelper.TryGetValueByXPath(paidMsgRd, "bodyTextColor", 0));
             liveChatPaidMessageRenderer.authorNameTextColor = Convert.ToInt64(JsonHelper.TryGetValueByXPath(paidMsgRd, "authorNameTextColor", 0));
             liveChatPaidMessageRenderer.timestampColor = Convert.ToInt64(JsonHelper.TryGetValueByXPath(paidMsgRd, "timestampColor", 0));
+        }
+
+        /// <summary>
+        /// 解析付費貼圖資訊
+        /// </summary>
+        /// <param name="liveChatPaidStickerRenderer">付費貼圖</param>
+        /// <param name="paidStkRd">json data.</param>
+        private void ParsePaidSticker(LiveChatPaidStickerRenderer liveChatPaidStickerRenderer, dynamic paidStkRd)
+        {
+            //解析留言內容
+            ParseTextMessage(liveChatPaidStickerRenderer, paidStkRd);
+
+            //解析付費貼圖內容
+            liveChatPaidStickerRenderer.purchaseAmountText.simpleText = Convert.ToString(JsonHelper.TryGetValueByXPath(paidStkRd, "purchaseAmountText.simpleText", ""));
+            liveChatPaidStickerRenderer.backgroundColor = Convert.ToInt64(JsonHelper.TryGetValueByXPath(paidStkRd, "backgroundColor", 0));
+            liveChatPaidStickerRenderer.moneyChipBackgroundColor = Convert.ToInt64(JsonHelper.TryGetValueByXPath(paidStkRd, "moneyChipBackgroundColor", 0));
+            liveChatPaidStickerRenderer.moneyChipTextColor = Convert.ToInt64(JsonHelper.TryGetValueByXPath(paidStkRd, "moneyChipTextColor", 0));
+            liveChatPaidStickerRenderer.authorNameTextColor = Convert.ToInt64(JsonHelper.TryGetValueByXPath(paidStkRd, "authorNameTextColor", 0));
+            liveChatPaidStickerRenderer.stickerDisplayWidth = Convert.ToInt32(JsonHelper.TryGetValueByXPath(paidStkRd, "stickerDisplayWidth", 0));
+            liveChatPaidStickerRenderer.stickerDisplayHeight = Convert.ToInt32(JsonHelper.TryGetValueByXPath(paidStkRd, "stickerDisplayHeight", 0));
+
+            //解析貼圖內容
+            dynamic sticker_data = JsonHelper.TryGetValueByXPath(paidStkRd, "sticker");
+            if (sticker_data != null)
+            {
+                liveChatPaidStickerRenderer.sticker = ParseSticker(sticker_data);
+            }
+        }
+
+        /// <summary>
+        /// 解析贈禮會員資訊
+        /// </summary>
+        /// <param name="liveChatSponsorshipsHeaderRenderer">贈禮會員</param>
+        /// <param name="sponsorshipsHedRd">json data.</param>
+        private void ParseHeader(LiveChatSponsorshipsHeaderRenderer liveChatSponsorshipsHeaderRenderer, dynamic sponsorshipsHedRd)
+        {
+            liveChatSponsorshipsHeaderRenderer.authorName.simpleText = Convert.ToString(JsonHelper.TryGetValueByXPath(sponsorshipsHedRd, "authorName.simpleText", ""));
+            liveChatSponsorshipsHeaderRenderer.authorPhoto.thumbnails = ParseAuthorPhotoThumb(JsonHelper.TryGetValueByXPath(sponsorshipsHedRd, "authorPhoto.thumbnails", null));
+            liveChatSponsorshipsHeaderRenderer.contextMenuAccessibility.accessibilityData.label = Convert.ToString(JsonHelper.TryGetValueByXPath(sponsorshipsHedRd, "contextMenuAccessibility.accessibilityData.label", ""));
+
+            //解析會員贈禮內容
+            dynamic runs = JsonHelper.TryGetValueByXPath(sponsorshipsHedRd, "primaryText.runs");
+            if (runs != null)
+            {
+                for (int i = 0; i < runs.Count; i++)
+                {
+                    dynamic run = runs[i];
+                    Runs r = new Runs();
+
+                    //解析一般文字元素
+                    string text = ParseText(run);
+                    if (text != "")
+                    {
+                        r.text = text;
+                        liveChatSponsorshipsHeaderRenderer.primaryText.runs.Add(r);
+                    }
+
+                    //解析Emoji元素
+                    Emoji emj = ParseEmoji(run);
+                    if (emj != null)
+                    {
+                        r.emoji = emj;
+                        liveChatSponsorshipsHeaderRenderer.primaryText.runs.Add(r);
+                    }
+                }
+            }
+            else
+            {
+                liveChatSponsorshipsHeaderRenderer.primaryText.simpleText = "";
+            }
+
+            var authorBadges = JsonHelper.TryGetValueByXPath(sponsorshipsHedRd, "authorBadges", null);
+            if (authorBadges != null)
+            {
+                //留言者可能擁有多個徽章 (EX:管理員、會員)
+                for (int i = 0; i < authorBadges.Count; i++)
+                {
+                    AuthorBadge badge = new AuthorBadge();
+                    badge.tooltip = Convert.ToString(JsonHelper.TryGetValueByXPath(authorBadges[i], "liveChatAuthorBadgeRenderer.tooltip"));
+                    liveChatSponsorshipsHeaderRenderer.authorBadges.Add(badge);
+                }
+            }
+
+            dynamic thumbsObj = JsonHelper.TryGetValueByXPath(sponsorshipsHedRd, "image.thumbnails");
+            for (int i = 0; i < thumbsObj.Count; i++)
+            {
+                Thumbnails thumbs = new Thumbnails();
+                thumbs.url = Convert.ToString(JsonHelper.TryGetValueByXPath(thumbsObj, $"{i.ToString()}.url"));
+                thumbs.width = Convert.ToInt32(JsonHelper.TryGetValueByXPath(thumbsObj, $"{i.ToString()}.width", 0));
+                thumbs.height = Convert.ToInt32(JsonHelper.TryGetValueByXPath(thumbsObj, $"{i.ToString()}.height", 0));
+
+                liveChatSponsorshipsHeaderRenderer.image.thumbnails.Add(thumbs);
+            }
+
+            liveChatSponsorshipsHeaderRenderer.image.accessibility.accessibilityData.label = Convert.ToString(JsonHelper.TryGetValueByXPath(sponsorshipsHedRd, "image.accessibility.accessibilityData.label", ""));
+        }
+
+        /// <summary>
+        /// 解析會員贈禮通知
+        /// </summary>
+        /// <param name="liveChatSponsorshipsGiftPurchaseAnnouncementRenderer">會員贈禮通知</param>
+        /// <param name="giftPurchaseAcmRd">json data.</param>
+        private void ParseGiftPurchaseAnnouncement(LiveChatSponsorshipsGiftPurchaseAnnouncementRenderer liveChatSponsorshipsGiftPurchaseAnnouncementRenderer, dynamic giftPurchaseAcmRd)
+        {
+            liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.id = Convert.ToString(JsonHelper.TryGetValueByXPath(giftPurchaseAcmRd, "id", ""));
+            liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.timestampUsec = Convert.ToInt64(JsonHelper.TryGetValueByXPath(giftPurchaseAcmRd, "timestampUsec", 0));
+            liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.authorExternalChannelId = Convert.ToString(JsonHelper.TryGetValueByXPath(giftPurchaseAcmRd, "authorExternalChannelId", ""));
+
+            dynamic sponsorshipsHedRd = JsonHelper.TryGetValueByXPath(giftPurchaseAcmRd, "header.liveChatSponsorshipsHeaderRenderer", null);
+            if (sponsorshipsHedRd != null)
+            {
+                ParseHeader(liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer, sponsorshipsHedRd);
+            }
+            else
+            {
+                liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer.authorName.simpleText = "";
+                liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer.authorPhoto.thumbnails = null;
+                liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer.primaryText.simpleText = "";
+                liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer.authorBadges = null;
+                liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer.contextMenuAccessibility.accessibilityData.label = "";
+            }
+        }
+
+        /// <summary>
+        /// 解析獲得會員贈禮通知
+        /// </summary>
+        /// <param name="liveChatSponsorshipsGiftRedemptionAnnouncementRenderer">獲得會員贈禮通知</param>
+        /// <param name="giftRedemptionAcmRd">json data.</param>
+        private void ParseGiftRedemptionAnnouncement(LiveChatSponsorshipsGiftRedemptionAnnouncementRenderer liveChatSponsorshipsGiftRedemptionAnnouncementRenderer, dynamic giftRedemptionAcmRd)
+        {
+            //解析留言內容
+            ParseTextMessage(liveChatSponsorshipsGiftRedemptionAnnouncementRenderer, giftRedemptionAcmRd);
+        }
+
+        /// <summary>
+        /// 解析會員訊息資訊
+        /// </summary>
+        /// <param name="liveChatMembershipItemRenderer">會員訊息</param>
+        /// <param name="membershipMsgRd">json data.</param>
+        private void ParseMembershipItem(LiveChatMembershipItemRenderer liveChatMembershipItemRenderer, dynamic membershipItmRd)
+        {
+            //解析留言內容
+            ParseTextMessage(liveChatMembershipItemRenderer, membershipItmRd);
+
+            //解析會員訊息內容 新會員有runs 其餘則為會員名稱
+            dynamic subruns = JsonHelper.TryGetValueByXPath(membershipItmRd, "headerSubtext.runs");
+            if (subruns != null)
+            {
+                string subText = "";
+                for (int i = 0; i < subruns.Count; i++)
+                {
+                    dynamic run = subruns[i];
+                    Runs r = new Runs();
+
+                    //解析一般文字元素
+                    string text = ParseText(run);
+                    if (text != "")
+                    {
+                        r.text = text;
+                        liveChatMembershipItemRenderer.headerSubtext.runs.Add(r);
+                    }
+
+                    //解析Emoji元素
+                    Emoji emj = ParseEmoji(run);
+                    if (emj != null)
+                    {
+                        r.emoji = emj;
+                        liveChatMembershipItemRenderer.headerSubtext.runs.Add(r);
+                    }
+                }
+                subText = FormatHeaderSubText(liveChatMembershipItemRenderer.headerSubtext);
+                liveChatMembershipItemRenderer.headerSubtext.simpleText = subText;
+                liveChatMembershipItemRenderer.headerPrimaryText.simpleText = "";
+            }
+            else
+            {
+                liveChatMembershipItemRenderer.headerSubtext.simpleText = Convert.ToString(JsonHelper.TryGetValueByXPath(membershipItmRd, "headerSubtext.simpleText", ""));
+                //會員訊息包含自訂表情符號或空格時runs陣列會分割成多元素
+                dynamic runs = JsonHelper.TryGetValueByXPath(membershipItmRd, "headerPrimaryText.runs");
+                if (runs != null)
+                {
+                    string primaryText = "";
+                    for (int i = 0; i < runs.Count; i++)
+                    {
+                        dynamic run = runs[i];
+                        Runs r = new Runs();
+
+                        //解析一般文字元素
+                        string text = ParseText(run);
+                        if (text != "")
+                        {
+                            r.text = text;
+                            liveChatMembershipItemRenderer.headerPrimaryText.runs.Add(r);
+                        }
+
+                        //解析Emoji元素
+                        Emoji emj = ParseEmoji(run);
+                        if (emj != null)
+                        {
+                            r.emoji = emj;
+                            liveChatMembershipItemRenderer.headerPrimaryText.runs.Add(r);
+                        }
+                    }
+                    primaryText = FormatHeaderPrimaryText(liveChatMembershipItemRenderer.headerPrimaryText);
+                    liveChatMembershipItemRenderer.headerPrimaryText.simpleText = primaryText;
+                }
+                else
+                    liveChatMembershipItemRenderer.headerPrimaryText.simpleText = "";
+            }
         }
 
         /// <summary>
@@ -579,18 +839,18 @@ namespace KomeTube.Kernel
         /// 解析留言者縮圖
         /// </summary>
         /// <param name="authorPhotoData">json data.</param>
-        private List<Thumbnail> ParseAuthorPhotoThumb(dynamic authorPhotoData)
+        private List<Thumbnails> ParseAuthorPhotoThumb(dynamic authorPhotoData)
         {
             if (authorPhotoData == null)
             {
                 return null;
             }
 
-            List<Thumbnail> ret = new List<Thumbnail>();
+            List<Thumbnails> ret = new List<Thumbnails>();
 
             for (int i = 0; i < authorPhotoData.Count; i++)
             {
-                Thumbnail thumb = new Thumbnail();
+                Thumbnails thumb = new Thumbnails();
                 thumb.url = JsonHelper.TryGetValue(authorPhotoData[i], "url", "");
                 thumb.width = JsonHelper.TryGetValue(authorPhotoData[i], "width", "");
                 thumb.height = JsonHelper.TryGetValue(authorPhotoData[i], "height", "");
@@ -652,6 +912,84 @@ namespace KomeTube.Kernel
             }
 
             ret.image.accessibility.accessibilityData.label = Convert.ToString(JsonHelper.TryGetValueByXPath(emojiObj, "image.accessibility.accessibilityData.label", ""));
+
+            return ret;
+        }
+
+        /// <summary>
+        /// 解析Sticker元素
+        /// </summary>
+        /// <param name="sticker_data">json data</param>
+        /// <returns>回傳留言的Sticker物件。若Json data內非Sticker則回傳null</returns>
+        private Sticker ParseSticker(dynamic sticker_data)
+        {
+            Sticker ret = new Sticker();
+            dynamic thumbsObj = JsonHelper.TryGetValueByXPath(sticker_data, "thumbnails");
+            for (int i = 0; i < thumbsObj.Count; i++)
+            {
+                Thumbnails thumbs = new Thumbnails();
+                thumbs.url = $"https:{Convert.ToString(JsonHelper.TryGetValueByXPath(thumbsObj, $"{i.ToString()}.url"))}";
+                thumbs.width = Convert.ToInt32(JsonHelper.TryGetValueByXPath(thumbsObj, $"{i.ToString()}.width", 0));
+                thumbs.height = Convert.ToInt32(JsonHelper.TryGetValueByXPath(thumbsObj, $"{i.ToString()}.height", 0));
+
+                ret.thumbnails.Add(thumbs);
+            }
+
+            ret.accessibility.accessibilityData.label = Convert.ToString(JsonHelper.TryGetValueByXPath(sticker_data, "accessibility.accessibilityData.label", "???"));
+
+            return ret;
+        }
+
+        private string FormatHeaderSubText(HeaderSubtext headerSubtext)
+        {
+            string ret = "";
+            for (int i = 0; i < headerSubtext.runs.Count; i++)
+            {
+                Runs r = headerSubtext.runs[i];
+                ret += r.text;
+                ret += FormatEmojiImage(r.emoji);
+            }
+
+            return ret;
+        }
+
+        private string FormatHeaderPrimaryText(HeaderPrimaryText headerPrimaryText)
+        {
+            string ret = "";
+            for (int i = 0; i < headerPrimaryText.runs.Count; i++)
+            {
+                Runs r = headerPrimaryText.runs[i];
+                ret += r.text;
+                ret += FormatEmojiImage(r.emoji);
+            }
+
+            return ret;
+        }
+
+        private string FormatEmojiImage(Emoji emoji)
+        {
+            if (emoji == null)
+            {
+                return "";
+            }
+
+            string ret = "";
+            if (emoji.isCustomEmoji)
+            {
+                Thumbnails thumb = emoji.image.thumbnails.ElementAtOrDefault(0);
+                if (thumb != null)
+                {
+                    string url = thumb.url;
+                    int w = thumb.width;
+                    int h = thumb.height;
+
+                    ret = $"[img source='{url}' width={w} height={h}]";
+                }
+            }
+            else
+            {
+                ret = emoji.emojiId;
+            }
 
             return ret;
         }
