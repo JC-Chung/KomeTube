@@ -51,6 +51,31 @@ namespace KomeTube.ViewModel
                     double timeStamp = (double)_data.addChatItemAction.item.liveChatPaidMessageRenderer.timestampUsec / 1000000.0;
                     _dateTime = new DateTime(1970, 1, 1).AddSeconds(timeStamp).ToLocalTime();
                 }
+                else if (_data.addChatItemAction.item.IsNewMembership || _data.addChatItemAction.item.IsMembershipItem)
+                {
+                    double timeStamp = (double)_data.addChatItemAction.item.liveChatMembershipItemRenderer.timestampUsec / 1000000.0;
+                    _dateTime = new DateTime(1970, 1, 1).AddSeconds(timeStamp).ToLocalTime();
+                }
+                else if (_data.addChatItemAction.item.IsGiftRedemption)
+                {
+                    double timeStamp = (double)_data.addChatItemAction.item.liveChatSponsorshipsGiftRedemptionAnnouncementRenderer.timestampUsec / 1000000.0;
+                    _dateTime = new DateTime(1970, 1, 1).AddSeconds(timeStamp).ToLocalTime();
+                }
+                else if (_data.addChatItemAction.item.IsGiftPurchase)
+                {
+                    double timeStamp = (double)_data.addChatItemAction.item.liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.timestampUsec / 1000000.0;
+                    _dateTime = new DateTime(1970, 1, 1).AddSeconds(timeStamp).ToLocalTime();
+                }
+                else if (_data.addChatItemAction.item.IsPaidSticker)
+                {
+                    double timeStamp = (double)_data.addChatItemAction.item.liveChatPaidStickerRenderer.timestampUsec / 1000000.0;
+                    _dateTime = new DateTime(1970, 1, 1).AddSeconds(timeStamp).ToLocalTime();
+                }
+                else if (_data.replaceChatItemAction.replacementItem.IsReplace)
+                {
+                    double timeStamp = (double)_data.replaceChatItemAction.replacementItem.liveChatTextMessageRenderer.timestampUsec / 1000000.0;
+                    _dateTime = new DateTime(1970, 1, 1).AddSeconds(timeStamp).ToLocalTime();
+                }
                 else
                 {
                     double timeStamp = (double)_data.addChatItemAction.item.liveChatTextMessageRenderer.timestampUsec / 1000000.0;
@@ -83,6 +108,26 @@ namespace KomeTube.ViewModel
                 {
                     return _data.addChatItemAction.item.liveChatPaidMessageRenderer.authorName.simpleText;
                 }
+                else if (_data.addChatItemAction.item.IsNewMembership || _data.addChatItemAction.item.IsMembershipItem)
+                {
+                    return _data.addChatItemAction.item.liveChatMembershipItemRenderer.authorName.simpleText;
+                }
+                else if (_data.addChatItemAction.item.IsGiftRedemption)
+                {
+                    return _data.addChatItemAction.item.liveChatSponsorshipsGiftRedemptionAnnouncementRenderer.authorName.simpleText;
+                }
+                else if (_data.addChatItemAction.item.IsGiftPurchase)
+                {
+                    return _data.addChatItemAction.item.liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer.authorName.simpleText;
+                }
+                else if (_data.addChatItemAction.item.IsPaidSticker)
+                {
+                    return _data.addChatItemAction.item.liveChatPaidStickerRenderer.authorName.simpleText;
+                }
+                else if (_data.replaceChatItemAction.replacementItem.IsReplace)
+                {
+                    return _data.replaceChatItemAction.replacementItem.liveChatTextMessageRenderer.authorName.simpleText;
+                }
                 else
                 {
                     return _data.addChatItemAction.item.liveChatTextMessageRenderer.authorName.simpleText;
@@ -110,6 +155,41 @@ namespace KomeTube.ViewModel
                         ret += badge.tooltip + " ";
                     }
                 }
+                else if (_data.addChatItemAction.item.IsNewMembership || _data.addChatItemAction.item.IsMembershipItem)
+                {
+                    foreach (var badge in _data.addChatItemAction.item.liveChatMembershipItemRenderer.authorBadges)
+                    {
+                        ret += badge.tooltip + " ";
+                    }
+                }
+                else if (_data.addChatItemAction.item.IsGiftRedemption)
+                {
+                    foreach (var badge in _data.addChatItemAction.item.liveChatSponsorshipsGiftRedemptionAnnouncementRenderer.authorBadges)
+                    {
+                        ret += badge.tooltip + " ";
+                    }
+                }
+                else if (_data.addChatItemAction.item.IsGiftPurchase)
+                {
+                    foreach (var badge in _data.addChatItemAction.item.liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer.authorBadges)
+                    {
+                        ret += badge.tooltip + " ";
+                    }
+                }
+                else if (_data.addChatItemAction.item.IsPaidSticker)
+                {
+                    foreach (var badge in _data.addChatItemAction.item.liveChatPaidStickerRenderer.authorBadges)
+                    {
+                        ret += badge.tooltip + " ";
+                    }
+                }
+                else if (_data.replaceChatItemAction.replacementItem.IsReplace)
+                {
+                    foreach (var badge in _data.replaceChatItemAction.replacementItem.liveChatTextMessageRenderer.authorBadges)
+                    {
+                        ret += badge.tooltip + " ";
+                    }
+                }
                 else
                 {
                     foreach (var badge in _data.addChatItemAction.item.liveChatTextMessageRenderer.authorBadges)
@@ -124,7 +204,11 @@ namespace KomeTube.ViewModel
 
         /// <summary>
         /// 取得留言內容
-        /// <para>若是付費留言則會顯示為"¥{金額} {留言內容}</para>
+        /// <para>若是付費留言則會顯示為"¥{金額} {留言內容}"</para>
+        /// <para>若是新會員訊息則會顯示為"{加入訊息}"</para>
+        /// <para>若是里程碑訊息則會顯示為"[{里程碑} {會員名稱}] {留言內容}"</para>
+        /// <para>若是獲得贈送會員通知則會顯示不變</para>
+        /// <para>若是付費貼圖則會顯示為"¥{金額} {貼圖內容}"</para>
         /// </summary>
         public String Message
         {
@@ -139,6 +223,44 @@ namespace KomeTube.ViewModel
                     return String.Format("{0} {1}",
                         _data.addChatItemAction.item.liveChatPaidMessageRenderer.purchaseAmountText.simpleText,
                         _data.addChatItemAction.item.liveChatPaidMessageRenderer.message.simpleText);
+                }
+                else if (_data.addChatItemAction.item.IsNewMembership)
+                {
+                    return Membership;
+                }
+                else if (_data.addChatItemAction.item.IsMembershipItem)
+                {
+                    msgText = FormatMessageText(_data.addChatItemAction.item.liveChatMembershipItemRenderer.message);
+                    _data.addChatItemAction.item.liveChatMembershipItemRenderer.message.simpleText = msgText;
+                    
+                    return String.Format("{0} {1}",
+                        Membership,
+                        _data.addChatItemAction.item.liveChatMembershipItemRenderer.message.simpleText);
+                }
+                else if (_data.addChatItemAction.item.IsGiftRedemption)
+                {
+                    return GiftRedemption;
+                }
+                else if (_data.addChatItemAction.item.IsGiftPurchase)
+                {
+                    return String.Format("{0} {1}",
+                        _data.addChatItemAction.item.liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer.authorName.simpleText,
+                        GiftPurchase);
+                }
+                else if (_data.addChatItemAction.item.IsPaidSticker)
+                {
+                    msgText = FormatStickerImage(_data.addChatItemAction.item.liveChatPaidStickerRenderer.sticker);
+
+                    return String.Format("{0} {1}",
+                        _data.addChatItemAction.item.liveChatPaidStickerRenderer.purchaseAmountText.simpleText,
+                        msgText);
+                }
+                else if (_data.replaceChatItemAction.replacementItem.IsReplace)
+                {
+                    msgText = FormatMessageText(_data.replaceChatItemAction.replacementItem.liveChatTextMessageRenderer.message);
+                    _data.replaceChatItemAction.replacementItem.liveChatTextMessageRenderer.message.simpleText = msgText;
+
+                    return _data.replaceChatItemAction.replacementItem.liveChatTextMessageRenderer.message.simpleText;
                 }
                 else
                 {
@@ -194,6 +316,24 @@ namespace KomeTube.ViewModel
         }
 
         /// <summary>
+        /// 取得付費金額(包含貨幣符號)，若非付費貼圖則回傳null
+        /// </summary>
+        public String PaidSticker
+        {
+            get
+            {
+                if (_data.addChatItemAction.item.IsPaidSticker)
+                {
+                    return _data.addChatItemAction.item.liveChatPaidStickerRenderer.purchaseAmountText.simpleText;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
         /// 取得留言者頭像網址
         /// </summary>
         public String AuthorPhotoUrl
@@ -206,6 +346,26 @@ namespace KomeTube.ViewModel
                 if (_data.addChatItemAction.item.IsPaidMessage)
                 {
                     return _data.addChatItemAction.item.liveChatPaidMessageRenderer.authorPhoto.thumbnails[0].url;
+                }
+                else if (_data.addChatItemAction.item.IsNewMembership || _data.addChatItemAction.item.IsMembershipItem)
+                {
+                    return _data.addChatItemAction.item.liveChatMembershipItemRenderer.authorPhoto.thumbnails[0].url;
+                }
+                else if (_data.addChatItemAction.item.IsGiftRedemption)
+                {
+                    return _data.addChatItemAction.item.liveChatSponsorshipsGiftRedemptionAnnouncementRenderer.authorPhoto.thumbnails[0].url;
+                }
+                else if (_data.addChatItemAction.item.IsGiftPurchase)
+                {
+                    return _data.addChatItemAction.item.liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer.authorPhoto.thumbnails[0].url;
+                }
+                else if (_data.addChatItemAction.item.IsPaidSticker)
+                {
+                    return _data.addChatItemAction.item.liveChatPaidStickerRenderer.authorPhoto.thumbnails[0].url;
+                }
+                else if (_data.replaceChatItemAction.replacementItem.IsReplace)
+                {
+                    return _data.replaceChatItemAction.replacementItem.liveChatTextMessageRenderer.authorPhoto.thumbnails[0].url;
                 }
                 else
                 {
@@ -225,6 +385,26 @@ namespace KomeTube.ViewModel
                 {
                     return _data.addChatItemAction.item.liveChatPaidMessageRenderer.authorExternalChannelId;
                 }
+                else if (_data.addChatItemAction.item.IsNewMembership || _data.addChatItemAction.item.IsMembershipItem)
+                {
+                    return _data.addChatItemAction.item.liveChatMembershipItemRenderer.authorExternalChannelId;
+                }
+                else if (_data.addChatItemAction.item.IsGiftRedemption)
+                {
+                    return _data.addChatItemAction.item.liveChatSponsorshipsGiftRedemptionAnnouncementRenderer.authorExternalChannelId;
+                }
+                else if (_data.addChatItemAction.item.IsGiftPurchase)
+                {
+                    return _data.addChatItemAction.item.liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.authorExternalChannelId;
+                }
+                else if (_data.addChatItemAction.item.IsPaidSticker)
+                {
+                    return _data.addChatItemAction.item.liveChatPaidStickerRenderer.authorExternalChannelId;
+                }
+                else if (_data.replaceChatItemAction.replacementItem.IsReplace)
+                {
+                    return _data.replaceChatItemAction.replacementItem.liveChatTextMessageRenderer.authorExternalChannelId;
+                }
                 else
                 {
                     return _data.addChatItemAction.item.liveChatTextMessageRenderer.authorExternalChannelId;
@@ -232,6 +412,93 @@ namespace KomeTube.ViewModel
             }
         }
 
+        /// <summary>
+        /// 取得會員訊息
+        /// </summary>
+        public String Membership
+        {
+            get
+            {
+                if (_data.addChatItemAction.item.IsNewMembership)
+                {
+                    return _data.addChatItemAction.item.liveChatMembershipItemRenderer.headerSubtext.simpleText;
+                }
+                else if (_data.addChatItemAction.item.IsMembershipItem)
+                {
+                    return String.Format("{0} {1}",
+                        _data.addChatItemAction.item.liveChatMembershipItemRenderer.headerPrimaryText.simpleText,
+                        _data.addChatItemAction.item.liveChatMembershipItemRenderer.headerSubtext.simpleText);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 取得獲得贈禮通知
+        /// </summary>
+        public String GiftRedemption
+        {
+            get
+            {
+                if (_data.addChatItemAction.item.IsGiftRedemption)
+                {
+                    String msgText = FormatMessageText(_data.addChatItemAction.item.liveChatSponsorshipsGiftRedemptionAnnouncementRenderer.message);
+                    _data.addChatItemAction.item.liveChatSponsorshipsGiftRedemptionAnnouncementRenderer.message.simpleText = msgText;
+
+                    return _data.addChatItemAction.item.liveChatSponsorshipsGiftRedemptionAnnouncementRenderer.message.simpleText;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 取得贈禮通知
+        /// </summary>
+        public String GiftPurchase
+        {
+            get
+            {
+                if (_data.addChatItemAction.item.IsGiftPurchase)
+                {
+                    String primaryText = FormatPrimaryText(_data.addChatItemAction.item.liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer.primaryText);
+                    _data.addChatItemAction.item.liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer.primaryText.simpleText = primaryText;
+
+                    return _data.addChatItemAction.item.liveChatSponsorshipsGiftPurchaseAnnouncementRenderer.header.liveChatSponsorshipsHeaderRenderer.primaryText.simpleText;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 取得貼圖內容
+        /// </summary>
+        public String StickerLabel
+        {
+            get
+            {
+                if (_data.addChatItemAction.item.IsPaidSticker)
+                {
+                    return _data.addChatItemAction.item.liveChatPaidStickerRenderer.sticker.accessibility.accessibilityData.label;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 取得留言者頻道連結
+        /// </summary>
         public String AuthorChannelUrl
         {
             get
@@ -308,6 +575,19 @@ namespace KomeTube.ViewModel
             return ret;
         }
 
+//        private string FormatPrimaryText(PrimaryText primaryText)
+//        {
+//            string ret = "";
+//            for (int i = 0; i < primaryText.runs.Count; i++)
+//            {
+//                Runs r = primaryText.runs[i];
+//                ret += r.text;
+//                ret += FormatEmojiImage(r.emoji);
+//            }
+//
+//            return ret;
+//        }
+
         private string FormatContentMessage(Message msg)
         {
             string ret = "";
@@ -357,13 +637,44 @@ namespace KomeTube.ViewModel
                     string url = thumb.url;
                     int w = thumb.width;
                     int h = thumb.height;
+                    string label = emoji.image.accessibility.accessibilityData.label;
 
-                    ret = $"[img source='{url}' width={w} height={h}]";
+                    ret = $"[img title='{label}' source='{url}' width={w} height={h}]"; // 但title似乎沒有效果
                 }
             }
             else
             {
                 ret = emoji.emojiId;
+            }
+
+            return ret;
+        }
+
+        private string FormatStickerImage(Sticker sticker)
+        {
+            if (sticker == null)
+            {
+                return "";
+            }
+
+            string ret = "";
+            Thumbnails thumb = sticker.thumbnails.ElementAtOrDefault(0);
+            if (thumb != null)
+            {
+                string url = thumb.url;
+                int w = thumb.width;
+                if (w > 40)
+                {
+                    w = 40;
+                }
+                int h = thumb.height;
+                if (h > 40)
+                {
+                    h = 40;
+                }
+                string label = sticker.accessibility.accessibilityData.label;
+
+                ret = $"[img title='{label}' source='{url}' width={w} height={h}]";
             }
 
             return ret;
