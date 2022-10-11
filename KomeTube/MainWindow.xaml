@@ -156,7 +156,7 @@
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Width="42" Header="">
+                    <DataGridTemplateColumn Width="42" Header="Icon">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Command="{Binding CmdOpenAuthorChannelUrl}" Cursor="Hand">
